@@ -40,14 +40,14 @@ class NbText(Classifier):
         for idx,c in enumerate(self.classes):
             words = str(text[idx]).split(" ")
 
-        for word in words:
-	        word_instances.append(word)
-	        self.word_counts[c] += 1
+            for word in words:
+	            word_instances.append(word)
+	            self.word_counts[c] += 1
 
-	        if self.class_map[c].get(word):
-		        self.class_map[c][word] += 1
-	        else:
-		        self.class_map[c][word] = 1
+	            if self.class_map[c].get(word):
+		            self.class_map[c][word] += 1
+	            else:
+		            self.class_map[c][word] = 1
 
         self.vocabulary = len(set(word_instances))
 
