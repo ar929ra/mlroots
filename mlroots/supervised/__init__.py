@@ -1,1 +1,1 @@
-# To be completed
+from .naivebayes import *
