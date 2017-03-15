@@ -8,8 +8,19 @@
 #
 # Licensed under MIT License (see LICENSE.txt for details)
 
-
+import numpy as np
 import string
+
+from mlroots.errors.errors import *
+
+
+def verify_data_type(data):
+	data_type = type(data).__module__
+
+	if not isinstance(data, list) and data_type != np.__name__:
+		raise DataInputError(
+                    "Data must be passed as lists or np arrays"
+        )
 
 
 def clean_text(text):

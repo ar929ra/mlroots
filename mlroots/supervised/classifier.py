@@ -8,9 +8,10 @@
 #
 # Licensed under MIT License (see LICENSE.txt for details)
 
-
+import numpy as np
 from abc import ABCMeta, abstractmethod
-from mlroots.errors.classifier_errors import *
+
+from mlroots.utils.utils import *
 
 
 class Classifier(object):
@@ -26,23 +27,23 @@ class Classifier(object):
 
 
     def __init__(self, train_classes, **kwargs):
+        verify_data_type(train_classes)
+
         self.classes = train_classes
         self.unique_classes = set()
         self.num_of_classes = len(self.classes)
         self.class_map = {}
         self.class_probabilities = {}
 
-        self.last_prediction = []
+        self.last_prediction = np.empty(len(train_classes), dtype = "object")
         self.accuracy = 0
 
         self.data = {}
 
         for name, value in kwargs.items():
-            if not isinstance(value, list):
-                raise DataInputError("Training data must be passed as lists")
+            verify_data_type(value)
 
-            else:
-                self.data[name] = value
+            self.data[name] = value
 
 
     def _create_class_map(self):
