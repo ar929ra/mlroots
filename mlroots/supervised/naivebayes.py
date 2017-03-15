@@ -75,9 +75,9 @@ class NbText(Classifier):
 
                         prob += np.log((num * 1.0)/den)
 
-                        if class_idx == 0 or prob > max_prob:
-                            max_prob = prob
-                            tmp_class = text_class
+                    if class_idx == 0 or prob > max_prob:
+                        max_prob = prob
+                        tmp_class = text_class
 
                 self.last_prediction[doc_idx] = tmp_class
 
