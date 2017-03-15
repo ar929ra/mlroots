@@ -9,10 +9,10 @@
 # Licensed under MIT License (see LICENSE.txt for details)
 
 
-import math
+import numpy as np
 
 from .classifier import Classifier
-from mlroots.errors.classifier_errors import *
+from mlroots.errors.errors import *
 from mlroots.utils.utils import *
 
 
@@ -53,29 +53,33 @@ class NbText(Classifier):
 
 
     def predict(self, **kwargs):
-        self.last_prediction[:] = []
-
         if "test_documents" in kwargs.keys():
+            data = kwargs["test_documents"]
+            verify_data_type(data)
 
-            for document in kwargs["test_documents"]:
+            self.last_prediction = np.empty(
+                len(data), dtype = "object"
+            )
+
+            for doc_idx,document in enumerate(data):
                 max_prob = 0
                 tmp_class = ""
                 clean_doc = clean_text(document)
 
-                for idx,text_class in enumerate(self.class_map):
-                    prob = math.log(self.class_probabilities[text_class])
+                for class_idx,text_class in enumerate(self.class_map):
+                    prob = np.log(self.class_probabilities[text_class])
 
                     for word in clean_doc.split(" "):
                         num = self.class_map[text_class].get(word,0) + 1
                         den = self.word_counts[text_class] + self.vocabulary
 
-                        prob += math.log((num * 1.0)/den)
+                        prob += np.log((num * 1.0)/den)
 
-                        if idx == 0 or prob > max_prob:
+                        if class_idx == 0 or prob > max_prob:
                             max_prob = prob
                             tmp_class = text_class
 
-                self.last_prediction.append(tmp_class)
+                self.last_prediction[doc_idx] = tmp_class
 
             return self.last_prediction
 
@@ -83,7 +87,22 @@ class NbText(Classifier):
             raise DocumentNotFoundError("Document test data not found")
 
 
-    def get_accuracy(self, test_classes, **kwargs): pass
+    def get_accuracy(self, test_classes, **kwargs):
+        verify_data_type(test_classes)
+        data_type = type(test_classes).__module__
+
+        if test_classes != np.__name__:
+            test_classes = np.asarray(test_classes)
+
+        if "test_documents" in kwargs.keys():
+            data = kwargs["test_documents"]
+            verify_data_type(data)
+
+            self.predict(test_documents = data)
+
+        correct_predictions = test_classes == self.last_prediction
+
+        return np.sum(correct_predictions)/len(test_classes)
 
 
 class NbGaussian(Classifier): pass

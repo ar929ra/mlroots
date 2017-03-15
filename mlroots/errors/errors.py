@@ -1,4 +1,4 @@
-# This file implements various supervised classifier custom errors 
+# This file implements various custom errors
 #
 # Part of mlroots, a project to implement well-known machine learning 
 # algorithms from scratch
