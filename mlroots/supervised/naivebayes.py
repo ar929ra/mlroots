@@ -17,6 +17,13 @@ from mlroots.utils.utils import *
 
 
 class NbText(Classifier):
+    """ Naive Bayes text classifier
+
+    Accepts a list or np array of discrete outcomes and a set of text
+    documents and builds a classifier based on this data.
+
+    Explanation of algorithm: https://goo.gl/H4ZgXw.
+    """
 
 
     def __init__(self, classes, **kwargs):
@@ -34,6 +41,12 @@ class NbText(Classifier):
 
 
     def _create_bag_of_words(self):
+        """ Private method that counts the number of words in the training
+        documents by class and the number of words in total.
+
+        Used to calculate the probability P(w|c) for each w word given c
+        class.
+        """
         text = self.data["documents"]
         word_instances = []
 
@@ -49,10 +62,26 @@ class NbText(Classifier):
 	            else:
 		            self.class_map[c][word] = 1
 
+        # Vocabulary = all unique words in the training data
         self.vocabulary = len(set(word_instances))
 
 
     def predict(self, **kwargs):
+        """ Returns an np array of predicted classes given an input of
+        documents.
+
+        The class any one document is assigned to is given by:
+
+            C_nb = argmax P(c_j) ∏ P(x_i|c_j)
+
+        We can correctly classify test documents by iterating through 
+        each word in the document and calculating P(x|c_j) for each
+        j class. The product of all conditional probabilities of each
+        word given each class with the prior probabilities of each
+        class denoted as P(c_j) is compared between all classes. The
+        class with the max probability given a document is assigned
+        to that document.
+        """
         if "test_documents" in kwargs.keys():
             data = kwargs["test_documents"]
             verify_data_type(data)
@@ -72,7 +101,8 @@ class NbText(Classifier):
                     for word in clean_doc.split(" "):
                         num = self.class_map[text_class].get(word,0) + 1
                         den = self.word_counts[text_class] + self.vocabulary
-
+                        
+                        # Sum of logs avoids floating-point underflow 
                         prob += np.log((num * 1.0)/den)
 
                     if class_idx == 0 or prob > max_prob:
@@ -88,6 +118,14 @@ class NbText(Classifier):
 
 
     def get_accuracy(self, test_classes, **kwargs):
+        """ Given a list or array of classes and an optional input
+        of documents, this function returns the percent of correctly
+        classified documents.
+
+        If no test documents are given, the function compares the given
+        test classes to the last predicted classes when either this
+        function or predict were called.
+        """
         verify_data_type(test_classes)
         data_type = type(test_classes).__module__
 
@@ -99,6 +137,9 @@ class NbText(Classifier):
             verify_data_type(data, test_classes)
 
             self.predict(test_documents = data)
+
+        else:
+            verify_data_type(test_classes, self.last_prediction)
 
         correct_predictions = test_classes == self.last_prediction
 
