@@ -14,5 +14,8 @@ class DocumentNotFoundError(Exception):
 class DataInputError(Exception):
     pass
 
+class LengthMismatchError(Exception):
+    pass
+
 class ModelSpecificationError(Exception):
 	pass

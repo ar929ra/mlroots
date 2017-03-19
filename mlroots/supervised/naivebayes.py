@@ -63,7 +63,7 @@ class NbText(Classifier):
 
             for doc_idx,document in enumerate(data):
                 max_prob = 0
-                tmp_class = ""
+                tmp_class = None
                 clean_doc = clean_text(document)
 
                 for class_idx,text_class in enumerate(self.class_map):
@@ -96,7 +96,7 @@ class NbText(Classifier):
 
         if "test_documents" in kwargs.keys():
             data = kwargs["test_documents"]
-            verify_data_type(data)
+            verify_data_type(data, test_classes)
 
             self.predict(test_documents = data)
 
@@ -105,4 +105,62 @@ class NbText(Classifier):
         return np.sum(correct_predictions)/len(test_classes)
 
 
-class NbGaussian(Classifier): pass
+class NbGaussian(Classifier):
+
+
+    def __init__(self, classes, **kwargs):
+        super(NbGaussian, self).__init__(classes, **kwargs)
+        self._create_class_map()
+
+        self.parameters = dict([[c,{}] for c in self.unique_classes])
+
+        self._get_class_parameters()
+
+
+    def _get_class_parameters(self):
+        tmp_classes = np.asarray(self.classes);
+
+        for c in self.unique_classes:
+            indexes = np.where(tmp_classes == c)[0]
+
+            for key in self.data:
+                data_arr = np.asarray(self.data[key])
+                values_at_ind = data_arr[indexes]
+
+                mean = np.mean(values_at_ind)
+                sdev = np.std(values_at_ind)
+
+                self.parameters[c][key] = (mean,sdev)
+
+
+    def predict(self, **kwargs):
+        if len(kwargs) == len(self.data):
+            data_len = len(kwargs[list(kwargs.keys())[0]])
+            self.last_prediction = np.empty(data_len, dtype = "object")
+
+            for test_item in np.arange(data_len):
+                max_prob = 0
+                tmp_class = None
+
+                for class_idx,res_class in enumerate(self.class_map):
+                    prob = np.log(self.class_probabilities[res_class])
+
+                    for var,obsv in kwargs.items():
+                        mean, sdev = self.parameters[res_class][var]
+
+                        prob += norm_pdf(obsv[test_item], mean, sdev)
+
+                    if class_idx == 0 or prob > max_prob:
+                        max_prob = prob
+                        tmp_class = res_class
+
+                self.last_prediction[test_item] = tmp_class
+
+            return self.last_prediction
+
+        else:
+            raise LengthMismatchError(
+                "Num of test variables must equal num of training variables"
+            )
+
+    def get_accuracy(self, test_classes, **kwargs): pass
