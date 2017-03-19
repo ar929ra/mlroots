@@ -41,7 +41,7 @@ class Classifier(object):
         self.data = {}
 
         for name, value in kwargs.items():
-            verify_data_type(value)
+            verify_data_type(value, train_classes)
 
             self.data[name] = value
 
