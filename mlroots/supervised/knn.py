@@ -108,5 +108,4 @@ class Knn(Classifier):
 
     		return self.last_prediction
 
-
-def get_accuracy(self, test_classes, **kwargs): pass
+    def get_accuracy(self, test_classes, **kwargs): pass
