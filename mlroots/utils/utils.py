@@ -16,6 +16,12 @@ from mlroots.errors.errors import *
 
 # Data integrity and cleaning
 
+def convert_to_array(data):
+    if isinstance(data, list):
+        return np.asarray(data)
+    else:
+        return data
+
 def verify_data_type(data, compare_length = None):
     data_type = type(data).__module__
 
@@ -43,3 +49,8 @@ def norm_pdf(x, mu, sig):
     num = np.exp(-(float(x) - float(mu))**2 / (2*var))
 
     return num/den
+
+# Similarity measures
+
+def euclidean_dist(a, b):
+    return np.sqrt(np.sum((a - b)**2))
