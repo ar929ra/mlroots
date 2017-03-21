@@ -8,6 +8,7 @@
 #
 # Licensed under MIT License (see LICENSE.txt for details)
 
+
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
