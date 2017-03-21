@@ -43,6 +43,8 @@ class Classifier(object):
         for name, value in kwargs.items():
             verify_data_type(value, train_classes)
 
+            value = convert_to_array(value)
+
             self.data[name] = value
 
 
@@ -56,6 +58,17 @@ class Classifier(object):
 
         self.class_probabilities = {c:(self.classes.count(c) * 1.0) / \
         self.num_of_classes for c in self.unique_classes}
+
+
+    def _create_data_matrix(self, data_dict):
+        """ Private method to create an m x n matrix from n data vectors
+
+        Used to simplify classifier related vector calculations across
+        all the features at once and to handle data in matrix form
+        """
+        matrix_array = np.array([v for k,v in data_dict.items()])
+
+        return np.transpose(matrix_array)
 
 
     @abstractmethod

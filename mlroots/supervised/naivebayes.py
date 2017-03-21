@@ -19,14 +19,32 @@ from mlroots.utils.utils import *
 class NbText(Classifier):
     """ Naive Bayes text classifier
 
-    Accepts a list or np array of discrete outcomes and a set of text
-    documents and builds a classifier based on this data.
+    Accepts a list or np array of discrete outcomes and an input of text
+    documents and builds a classifier based on these data.
 
     Explanation of algorithm: https://goo.gl/H4ZgXw.
     """
 
 
     def __init__(self, classes, **kwargs):
+        """ NbText constructor
+
+        The classes parameter refers to the training class responses.
+
+        The training data should be passed in as key-value pairs where
+        each key corresponds to a feature/dimension/column in the
+        data. An easy way to go from a numpy matrix to a dictionary
+        that can be passed as kwargs is:
+
+        my_data = np.array([[1,2,3], [4,5,6], [7,8,9]])
+        kwargs = dict(enumerate(my_data))
+
+        To keep named features/dimensions/columns:
+
+        my_data = np.array([[1,2,3], [4,5,6], [7,8,9]])
+        columns = ["col1", "col2", "col3"] #np arrays are unhashable
+        kwargs = dict(zip(columns, my_data))
+        """
         if "documents" in kwargs.keys():
             super(NbText, self).__init__(classes, **kwargs)
             self._create_class_map()
@@ -165,7 +183,6 @@ class NbGaussian(Classifier):
             indexes = np.where(tmp_classes == c)[0]
 
             for key in self.data:
-                data_arr = np.asarray(self.data[key])
                 values_at_ind = data_arr[indexes]
 
                 mean = np.mean(values_at_ind)
