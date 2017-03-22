@@ -45,7 +45,7 @@ class NbText(Classifier):
         columns = ["col1", "col2", "col3"] #np arrays are unhashable
         kwargs = dict(zip(columns, my_data))
         """
-        if "documents" in kwargs.keys():
+        if "documents" in kwargs:
             super(NbText, self).__init__(classes, **kwargs)
             self._create_class_map()
 
@@ -100,7 +100,7 @@ class NbText(Classifier):
         class with the max probability given a document is assigned
         to that document.
         """
-        if "test_documents" in kwargs.keys():
+        if "test_documents" in kwargs:
             data = kwargs["test_documents"]
             verify_data_type(data)
 
@@ -150,7 +150,7 @@ class NbText(Classifier):
         if test_classes != np.__name__:
             test_classes = np.asarray(test_classes)
 
-        if "test_documents" in kwargs.keys():
+        if "test_documents" in kwargs:
             data = kwargs["test_documents"]
             verify_data_type(data, test_classes)
 
