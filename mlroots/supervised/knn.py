@@ -108,4 +108,23 @@ class Knn(Classifier):
 
     		return self.last_prediction
 
-    def get_accuracy(self, test_classes, **kwargs): pass
+
+    def get_accuracy(self, test_classes, **kwargs):
+        verify_data_type(test_classes)
+        data_type = type(test_classes).__module__
+
+        if data_type != np.__name__:
+            test_classes = np.asarray(test_classes)
+
+        if "k" in kwargs:
+            for k,v in kwargs.items():
+                verify_data_type(test_classes, v)
+
+            self.predict(kwargs)
+
+        else:
+            verify_data_type(test_classes, self.last_prediction)
+
+        correct_predictions = test_classes == self.last_prediction
+
+        return np.sum(correct_predictions)/len(test_classes)
