@@ -147,7 +147,7 @@ class NbText(Classifier):
         verify_data_type(test_classes)
         data_type = type(test_classes).__module__
 
-        if test_classes != np.__name__:
+        if data_type != np.__name__:
             test_classes = np.asarray(test_classes)
 
         if "test_documents" in kwargs:
