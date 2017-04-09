@@ -9,6 +9,7 @@
 # Licensed under MIT License (see LICENSE.txt for details)
 
 import numpy as np
+import pandas as pd
 import string
 
 from mlroots.errors.errors import *
@@ -30,10 +31,13 @@ def verify_data_type(data, compare_length = None):
 	        "Data must be passed as lists or np arrays"
         )
 
-    if compare_length and len(data) != len(compare_length):
-        raise LengthMismatchError(
-            "Predictor data must be the same length as response data"
-        )
+    try:
+        if len(data) != len(compare_length):
+            raise LengthMismatchError(
+                "Predictor data must be the same length as response data"
+            )
+
+    except TypeError: pass
 
 
 def clean_text(text):

@@ -90,7 +90,7 @@ class NbText(Classifier):
 
         The class any one document is assigned to is given by:
 
-            C_nb = argmax P(c_j) ∏ P(x_i|c_j)
+            C_nb = argmax P(c_j) prod P(x_i|c_j)
 
         We can correctly classify test documents by iterating through 
         each word in the document and calculating P(x|c_j) for each
