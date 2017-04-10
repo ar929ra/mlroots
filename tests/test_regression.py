@@ -80,6 +80,7 @@ class FitTest(unittest.TestCase):
             msg = "From df LinMod class method yielding wrong coefficients"
         )
 
+    
     def test_rsq(self):
         self.assertAlmostEqual(self.multi_model.r_sq, 0.4252, places = 2,
             msg = "Multiple R squared calculated incorrectly"
