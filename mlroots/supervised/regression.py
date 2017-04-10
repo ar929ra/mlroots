@@ -34,11 +34,12 @@ class LinMod(object):
         verify_data_type(design_matrix)
         verify_data_type(response, design_matrix)
 
-        convert_to_array(design_matrix)
-        convert_to_array(response)
+        design_matrix = convert_to_array(design_matrix)
+        response = convert_to_array(response)
 
         try: 
             self.n, self.k = design_matrix.shape
+
         except ValueError:
             self.n, self.k = (len(design_matrix),1)
 
@@ -47,6 +48,7 @@ class LinMod(object):
                 np.array([[1]] * self.n),
                 design_matrix
             ])
+
         except ValueError:
             self.design_matrix = np.hstack([
                 np.array([[1]] * self.n),
@@ -133,7 +135,26 @@ class LinMod(object):
         return self.coeff
 
 
-    def predict(self): pass
+    def predict(self, test_matrix):
+        """ Given a matrix of test data, returns a vector of predicted y
+        values calculated with coefficients based on training data
+        """
+        test_matrix = convert_to_array(test_matrix)
+        verify_data_type(test_matrix, self.coeff)
+
+        try:
+            test_matrix = np.hstack([
+                np.array([[1]] * self.n),
+                test_matrix
+            ])
+
+        except ValueError:
+            test_matrix = np.hstack([
+                np.array([[1]] * self.n),
+                np.transpose(np.array([test_matrix]))
+            ])
+
+        return test_matrix.dot(self.coeff)
 
 
     def summary(self):
