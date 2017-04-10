@@ -10,6 +10,7 @@
 
 
 import numpy as np
+from scipy.special import stdtr
 
 from mlroots.utils.utils import *
 
@@ -33,10 +34,13 @@ class LinMod(object):
         verify_data_type(design_matrix)
         verify_data_type(response, design_matrix)
 
+        convert_to_array(design_matrix)
+        convert_to_array(response)
+
         try: 
-            self.n, self.features = design_matrix.shape
+            self.n, self.k = design_matrix.shape
         except ValueError:
-            self.n, self.features = (len(design_matrix),1)
+            self.n, self.k = (len(design_matrix),1)
 
         try:
             self.design_matrix = np.hstack([
@@ -49,8 +53,22 @@ class LinMod(object):
                 np.transpose(np.array([design_matrix]))
             ])
         
+        self.orig_design_matrix = design_matrix
         self.response = response
+
+
+        # Default model result values
         self.coeff = None
+        self.predicted = None
+        self.residuals = None
+        self.ss_res = None
+        self.ss_total = None
+        self.ss_reg = None
+        self.r_sq = None
+        self.cov_matrix = None
+        self.coeff_se = None
+        self.coeff_t = None
+        self.coeff_p = None
 
 
     @classmethod
@@ -89,7 +107,48 @@ class LinMod(object):
         xtx = xt.dot(self.design_matrix)
         xtx_inv = np.linalg.inv(xtx)
         xty = xt.dot(self.response)
+        yty = self.response.dot(self.response)
+        sq_y_n = (np.sum(self.response)**2) / self.n
 
+        # Calculated coefficients, predicted values, and residuals
         self.coeff = xtx_inv.dot(xty)
+        self.predicted = self.design_matrix.dot(self.coeff)
+        self.residuals = self.response - self.predicted
+
+        # Calculate sum of squares and R squared
+        self.ss_res = self.residuals.dot(self.residuals)
+        self.ss_total = yty - sq_y_n
+        self.ss_reg = self.ss_total - self.ss_res
+        self.r_sq = self.ss_reg / self.ss_total
+
+        # Calculate covariance matrix and standard error of coefficients
+        self.cov_matrix = (self.ss_res / (self.n - self.k - 1))*xtx_inv
+        self.coeff_se = np.sqrt(np.diagonal(self.cov_matrix))
+
+        # Calculate p-values based on t test on coefficient estimates
+        self.coeff_t = self.coeff/self.coeff_se
+        self.coeff_p = (
+            1 - stdtr(self.n - self.k - 1, np.absolute(self.coeff_t)))*2
 
         return self.coeff
+
+
+    def predict(self): pass
+
+
+    def summary(self):
+        """ Print summary of regression output to console """
+        col_headers = np.array([
+            "Coeff", "Estimate", "Std. Error", "t-stat", "p-value"
+        ])
+        coeff_header = np.array([np.array([i]) for i in range(self.k + 1)])
+        coeff_output = np.array([
+            self.coeff, self.coeff_se, self.coeff_t, self.coeff_p
+        ])
+        print_matrix = np.hstack([coeff_header, np.transpose(coeff_output)])
+
+        print("\nCoefficients:\n\n{:^15} {:^15} {:^15} {:^15} {:^15}".format(*col_headers))
+
+        for row in print_matrix:
+            formatted_row = "{:^15.0f} {:^15.2f} {:^15.2f} {:^15.2f} {:^15.2f}".format(*row)
+            print(formatted_row)
