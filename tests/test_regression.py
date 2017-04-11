@@ -1,8 +1,8 @@
-# This file contains unit tests of the regression implementatipon in
-# mlroots/supervised/regression.py
+# This file contains unit tests of the regression implementation in mlroots/
+# supervised/regression.py
 #
-# Part of mlroots, a project to implement well-known machine learning 
-# algorithms from scratch
+# Part of mlroots, a project to implement well-known machine learning  algorithms 
+# from scratch
 #
 # Originally authored by Adams Rosales <adamisto92@gmail.com>
 #
