@@ -110,9 +110,10 @@ class LinMod(object):
         xtx_inv = np.linalg.inv(xtx)
         xty = xt.dot(self.response)
         yty = self.response.dot(self.response)
-        sq_y_n = (np.sum(self.response)**2) / self.n
+        sq_y_n = (np.sum(self.response) ** 2) / self.n
 
         # Calculated coefficients, predicted values, and residuals
+        self.df = self.n - self.k - 1
         self.coeff = xtx_inv.dot(xty)
         self.predicted = self.design_matrix.dot(self.coeff)
         self.residuals = self.response - self.predicted
@@ -122,15 +123,16 @@ class LinMod(object):
         self.ss_total = yty - sq_y_n
         self.ss_reg = self.ss_total - self.ss_res
         self.r_sq = self.ss_reg / self.ss_total
+        self.adj_r_sq = 1 - ((1 - self.r_sq) * (self.n - 1)) / (self.df)
 
         # Calculate covariance matrix and standard error of coefficients
-        self.cov_matrix = (self.ss_res / (self.n - self.k - 1))*xtx_inv
+        self.mse = self.ss_res / self.df
+        self.cov_matrix = self.mse * xtx_inv
         self.coeff_se = np.sqrt(np.diagonal(self.cov_matrix))
 
         # Calculate p-values based on t test on coefficient estimates
         self.coeff_t = self.coeff/self.coeff_se
-        self.coeff_p = (
-            1 - stdtr(self.n - self.k - 1, np.absolute(self.coeff_t)))*2
+        self.coeff_p = (1 - stdtr(self.df, np.absolute(self.coeff_t))) * 2
 
         return self.coeff
 
@@ -168,8 +170,18 @@ class LinMod(object):
         ])
         print_matrix = np.hstack([coeff_header, np.transpose(coeff_output)])
 
-        print("\nCoefficients:\n\n{:^15} {:^15} {:^15} {:^15} {:^15}".format(*col_headers))
+        print(
+            "\nCoefficients:\n\n{:^15} {:^15} {:^15} {:^15} {:^15}"
+            .format(*col_headers)
+        )
 
         for row in print_matrix:
-            formatted_row = "{:^15.0f} {:^15.2f} {:^15.2f} {:^15.2f} {:^15.2f}".format(*row)
+            formatted_row = \
+                "{:^15.0f} {:^15.2f} {:^15.2f} {:^15.2f} {:^15.2f}".format(*row)
             print(formatted_row)
+
+        print(
+            """\n\nAdditional parameters:\n\nMSE: {:^10.2f} on {:^5.0f} df
+            \nMultiple R-squared: {:5.2f}  Adjusted R-squared: {:5.2f}
+            """.format(self.mse, self.df, self.r_sq, self.adj_r_sq)
+        )
