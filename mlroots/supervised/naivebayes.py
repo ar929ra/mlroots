@@ -45,17 +45,16 @@ class NbText(Classifier):
         columns = ["col1", "col2", "col3"] #np arrays are unhashable
         kwargs = dict(zip(columns, my_data))
         """
-        if "documents" in kwargs:
-            super(NbText, self).__init__(classes, **kwargs)
-            self._create_class_map()
-
-            self.word_counts = dict([[c,0] for c in self.unique_classes])
-            self.vocabulary = 0
-
-            self._create_bag_of_words()
-
-        else:
+        if "documents" not in kwargs:
             raise DocumentNotFoundError("Document training data not found")
+
+        super(NbText, self).__init__(classes, **kwargs)
+        self._create_class_map()
+
+        self.word_counts = dict([[c,0] for c in self.unique_classes])
+        self.vocabulary = 0
+
+        self._create_bag_of_words()
 
 
     def _create_bag_of_words(self):
@@ -100,39 +99,38 @@ class NbText(Classifier):
         class with the max probability given a document is assigned
         to that document.
         """
-        if "test_documents" in kwargs:
-            data = kwargs["test_documents"]
-            verify_data_type(data)
-
-            self.last_prediction = np.empty(
-                len(data), dtype = "object"
-            )
-
-            for doc_idx,document in enumerate(data):
-                max_prob = 0
-                tmp_class = None
-                clean_doc = clean_text(document)
-
-                for class_idx,text_class in enumerate(self.class_map):
-                    prob = np.log(self.class_probabilities[text_class])
-
-                    for word in clean_doc.split(" "):
-                        num = self.class_map[text_class].get(word,0) + 1
-                        den = self.word_counts[text_class] + self.vocabulary
-                        
-                        # Sum of logs avoids floating-point underflow 
-                        prob += np.log((num * 1.0)/den)
-
-                    if class_idx == 0 or prob > max_prob:
-                        max_prob = prob
-                        tmp_class = text_class
-
-                self.last_prediction[doc_idx] = tmp_class
-
-            return self.last_prediction
-
-        else:
+        if "test_documents" not in kwargs:
             raise DocumentNotFoundError("Document test data not found")
+
+        data = kwargs["test_documents"]
+        verify_data_type(data)
+
+        self.last_prediction = np.empty(
+            len(data), dtype = "object"
+        )
+
+        for doc_idx,document in enumerate(data):
+            max_prob = 0
+            tmp_class = None
+            clean_doc = clean_text(document)
+
+            for class_idx,text_class in enumerate(self.class_map):
+                prob = np.log(self.class_probabilities[text_class])
+
+                for word in clean_doc.split(" "):
+                    num = self.class_map[text_class].get(word,0) + 1
+                    den = self.word_counts[text_class] + self.vocabulary
+                    
+                    # Sum of logs avoids floating-point underflow 
+                    prob += np.log((num * 1.0)/den)
+
+                if class_idx == 0 or prob > max_prob:
+                    max_prob = prob
+                    tmp_class = text_class
+
+            self.last_prediction[doc_idx] = tmp_class
+
+        return self.last_prediction
 
 
     def get_accuracy(self, test_classes, **kwargs):
@@ -192,33 +190,33 @@ class NbGaussian(Classifier):
 
 
     def predict(self, **kwargs):
-        if len(kwargs) == len(self.data):
-            data_len = len(kwargs[list(kwargs.keys())[0]])
-            self.last_prediction = np.empty(data_len, dtype = "object")
-
-            for test_item in np.arange(data_len):
-                max_prob = 0
-                tmp_class = None
-
-                for class_idx,res_class in enumerate(self.class_map):
-                    prob = np.log(self.class_probabilities[res_class])
-
-                    for var,obsv in kwargs.items():
-                        mean, sdev = self.parameters[res_class][var]
-
-                        prob += norm_pdf(obsv[test_item], mean, sdev)
-
-                    if class_idx == 0 or prob > max_prob:
-                        max_prob = prob
-                        tmp_class = res_class
-
-                self.last_prediction[test_item] = tmp_class
-
-            return self.last_prediction
-
-        else:
+        if len(kwargs) != len(self.data):
             raise LengthMismatchError(
                 "Num of test variables must equal num of training variables"
             )
+
+        data_len = len(kwargs[list(kwargs.keys())[0]])
+        self.last_prediction = np.empty(data_len, dtype = "object")
+
+        for test_item in np.arange(data_len):
+            max_prob = 0
+            tmp_class = None
+
+            for class_idx,res_class in enumerate(self.class_map):
+                prob = np.log(self.class_probabilities[res_class])
+
+                for var,obsv in kwargs.items():
+                    mean, sdev = self.parameters[res_class][var]
+
+                    prob += norm_pdf(obsv[test_item], mean, sdev)
+
+                if class_idx == 0 or prob > max_prob:
+                    max_prob = prob
+                    tmp_class = res_class
+
+            self.last_prediction[test_item] = tmp_class
+
+        return self.last_prediction
+        
 
     def get_accuracy(self, test_classes, **kwargs): pass

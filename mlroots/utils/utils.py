@@ -23,7 +23,17 @@ def convert_to_array(data):
     else:
         return data
 
-def verify_data_type(data, compare_length = None):
+def convert_arr(func):
+
+    def wrapper(*args, **kwargs):
+        for i in range(args):
+            args[i] = convert_to_array(rslt)
+
+        func(*args, **kwargs)
+
+    return wrapper
+
+def verify_data_type(data, comp = None):
     data_type = type(data).__module__
 
     if not isinstance(data, list) and data_type != np.__name__:
@@ -32,13 +42,13 @@ def verify_data_type(data, compare_length = None):
         )
 
     try:
-        if len(data) != len(compare_length):
+        if len(data) != len(comp):
             raise LengthMismatchError(
                 "Predictor data must be the same length as response data"
             )
 
-    except TypeError: pass
-
+    except TypeError: 
+        pass
 
 def clean_text(text):
     l_text_no_space = text.replace("\n","").lstrip().rstrip().lower()
@@ -53,6 +63,7 @@ def norm_pdf(x, mu, sig):
     num = np.exp(-(float(x) - float(mu))**2 / (2*var))
 
     return num/den
+    
 
 # Similarity measures
 

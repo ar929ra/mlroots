@@ -130,7 +130,10 @@ class PredictionTest(BaseTests.FitTest):
         with a different number of features than the training data has """
         test_matrix = np.array([[1,2],[2,3]])
 
-        self.assertRaises(LengthMismatchError, self.multi_model.predict, test_matrix) 
+        self.assertRaises(LengthMismatchError, 
+            self.multi_model.predict, 
+            test_matrix
+        ) 
 
     
     def test_input_error(self):
