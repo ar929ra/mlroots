@@ -64,49 +64,48 @@ class Knn(Classifier):
     			"Num of test variables must equal num of training variables"
     		)
 
-    	else:
-    		k = kwargs["k"]
-    		del kwargs["k"]
+        k = kwargs["k"]
+        del kwargs["k"]
 
-    		test_matrix = self._create_data_matrix(kwargs)
-    		train_matrix = self._create_data_matrix(self.data)
-    		train_rows, _ = train_matrix.shape
-    		test_rows, _ = test_matrix.shape
+        test_matrix = self._create_data_matrix(kwargs)
+        train_matrix = self._create_data_matrix(self.data)
+        train_rows, _ = train_matrix.shape
+        test_rows, _ = test_matrix.shape
 
-    		self.last_prediction = np.empty(test_rows, dtype = "object")
+        self.last_prediction = np.empty(test_rows, dtype = "object")
 
-    		# Iterate through each test observation
-    		for obsv in range(test_rows):
-    			similarities = np.empty(train_rows, dtype = np.float_)
+        # Iterate through each test observation
+        for obsv in range(test_rows):
+            similarities = np.empty(train_rows, dtype = np.float_)
 
-    			# Get similarity scores to all training observations
-    			for idx in range(train_rows):
-    				similarities[idx] = euclidean_dist(
-    					test_matrix[obsv], train_matrix[idx]
-    				)
+            # Get similarity scores to all training observations
+            for idx in range(train_rows):
+                similarities[idx] = euclidean_dist(
+                    test_matrix[obsv], train_matrix[idx]
+                )
 
-    			# Get neighbors of test observation
-    			try:
-    				smallest_k = np.argpartition(similarities, k)[:k]
+            # Get neighbors of test observation
+            try:
+                smallest_k = np.argpartition(similarities, k)[:k]
 
-    			except ValueError:
-    				tmp_k = similarities.size - 1
-    				smallest_k = np.argpartition(similarities, tmp_k)[:k]
+            except ValueError:
+                tmp_k = similarities.size - 1
+                smallest_k = np.argpartition(similarities, tmp_k)[:k]
 
-    			neighbors = self.classes[smallest_k]
+            neighbors = self.classes[smallest_k]
 
-    			# Classify as most likely neighbor
-    			neighbor_cls, counts = np.unique(neighbors, return_counts = True)
+            # Classify as most likely neighbor
+            neighbor_cls, counts = np.unique(neighbors, return_counts = True)
 
-    			try:
-    				matched_class = neighbor_cls[np.argpartition(counts, 1)[-1:]][0]
+            try:
+                matched_class = neighbor_cls[np.argpartition(counts, 1)[-1:]][0]
 
-    			except ValueError:
-    				matched_class = neighbor_cls[0]
+            except ValueError:
+                matched_class = neighbor_cls[0]
 
-    			self.last_prediction[obsv] = matched_class
+            self.last_prediction[obsv] = matched_class
 
-    		return self.last_prediction
+        return self.last_prediction
 
 
     def get_accuracy(self, test_classes, **kwargs):
